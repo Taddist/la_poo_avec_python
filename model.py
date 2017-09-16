@@ -35,6 +35,7 @@ class Zone:
     MAX_LATITUDE_DEGREES = 90
     WIDTH_DEGREES = 1 # degrees of longitude
     HEIGHT_DEGREES = 1 # degrees of latitude
+    EARTH_RADIUS_KILOMETERS = 6371
 
     def __init__(self, corner1, corner2):
         self.corner1 = corner1
@@ -45,8 +46,33 @@ class Zone:
     def population(self):
         return len(self.inhabitants)
 
+    @property
+    def width(self):
+        return abs(self.corner1.longitude - self.corner2.longitude) * self.EARTH_RADIUS_KILOMETERS
+
+    @property
+    def height(self):
+        return abs(self.corner1.latitude - self.corner2.latitude) * self.EARTH_RADIUS_KILOMETERS
+
+    @property
+    def area(self):
+        """Compute the zone area, in square kilometers"""
+        return self.height * self.width
+
+    def population_density(self):
+        """Population density of the zone, (people/km²)"""
+        # Note that this will crash with a ZeroDivisionError if the zone has 0
+        # area, but it should really not happen
+        return self.population / self.area
+
     def add_inhabitant(self, inhabitant):
         self.inhabitants.append(inhabitant)
+
+    def average_agreeableness(self):
+        if not self.inhabitants:
+            return 0
+
+        return sum([inhabitant.agreeableness for inhabitant in self.inhabitants]) / self.population
 
     def contains(self, position):
         return position.longitude >= min(self.corner1.longitude, self.corner2.longitude) and \
